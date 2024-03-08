@@ -75,7 +75,15 @@ class qubit:
         return probs
             
     def measure(self, basis = None):
+        '''
+        measure the qubit in a basis
+        '''
         if basis is None:
             basis = self.basis
         probs = self.probs(basis = basis)
-        return 0
+        result = np.random.choice([0, 1], p = probs)
+        if result == 0:
+            self.state = [1, 0]
+        else:
+            self.state = [0, 1]
+        return result
