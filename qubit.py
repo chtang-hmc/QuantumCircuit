@@ -1,6 +1,6 @@
 import numpy as np
 
-class basis:
+class Basis:
     '''
     basis class
     '''
@@ -16,6 +16,8 @@ class basis:
                     states = np.array([[1, 0], [0, 1]])
                 elif special == '10':
                     states = np.array([[0, 1], [1, 0]])
+                elif special == 'RL':
+                    states = np.array([[1, 1j], [1, -1j]])/np.sqrt(2)
             else:
                 states = np.eye(2)
                 
@@ -37,15 +39,17 @@ class basis:
     def __repr__(self):
         return str(self.states)
 
-class qubit:
+class Qubit:
     '''
     qubit class
     '''
-    def __init__(self, state = np.array([1,0]), basis = basis()):
+    def __init__(self, state: np.array = np.array([1,0]), basis: Basis = Basis(), entangled: bool = False, other = None):
         norm = np.linalg.norm(state)
         assert np.isclose(norm, 1), "State must be normalized"
         self.state = state
         self.basis = basis
+        self.entangled = entangled
+        self.other = other
         
     def __str__(self):
         return str(self.state)
@@ -54,7 +58,7 @@ class qubit:
         return str(self.state)
 
     def _copy(self):
-        return qubit(state = self.state, basis = self.basis)
+        return Qubit(state = self.state, basis = self.basis)
     
     def change_basis(self, new_basis):
         '''
@@ -63,27 +67,48 @@ class qubit:
         self.state = np.dot(np.conj(np.transpose(new_basis.states)), self.state)
         self.basis = new_basis
     
-    def probs(self, basis = None):
+    def probs(self, basis = None, seed = 42):
         '''
         get the probabilities of measuring a basis
         '''
-        if basis is None:
-            basis = self.basis
-        copy_qubit = self._copy()
-        copy_qubit.change_basis(basis)
-        probs = np.abs(copy_qubit.state) ** 2
-        return probs
-            
-    def measure(self, basis = None):
-        '''
-        measure the qubit in a basis
-        '''
-        if basis is None:
-            basis = self.basis
-        probs = self.probs(basis = basis)
-        result = np.random.choice([0, 1], p = probs)
-        if result == 0:
-            self.state = [1, 0]
+        np.random.seed(seed)
+        if self.entangled:
+            pass
+        
         else:
-            self.state = [0, 1]
-        return result
+            if basis is None:
+                basis = self.basis
+            copy_qubit = self._copy()
+            copy_qubit.change_basis(basis)
+            probs = np.abs(copy_qubit.state) ** 2
+            return probs
+            
+    def measure(self, basis = None, seed = 42):
+        '''
+        measure and collapse the qubit in a basis
+        '''
+        np.random.seed(seed)
+        if self.entangled:
+            pass
+        
+        else:
+            if basis is None:
+                basis = self.basis
+            probs = self.probs(basis = basis, seed = seed)
+            result = np.random.choice([0, 1], p = probs)
+            
+            original_basis = self.basis
+            self.state = [0, 0]
+            self.state[result] = 1
+            self.basis = basis
+            self.change_basis(original_basis)
+            return result
+    
+    def entangle(self, other):
+        '''
+        entangle two qubits
+        '''
+        self.entangled = True
+        other.entangled = True
+        self.other.append(other)
+        other.other.append(self)
