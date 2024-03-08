@@ -52,6 +52,9 @@ class qubit:
     
     def __repr__(self):
         return str(self.state)
+
+    def _copy(self):
+        return qubit(state = self.state, basis = self.basis)
     
     def change_basis(self, new_basis):
         '''
@@ -62,10 +65,17 @@ class qubit:
     
     def probs(self, basis = None):
         '''
-        get the probabilities of measuring |0> and |1> in the given basis
+        get the probabilities of measuring a basis
         '''
         if basis is None:
             basis = self.basis
+        copy_qubit = self._copy()
+        copy_qubit.change_basis(basis)
+        probs = np.abs(copy_qubit.state) ** 2
+        return probs
             
-    def measure(self, basis = ['0', '1']):
+    def measure(self, basis = None):
+        if basis is None:
+            basis = self.basis
+        probs = self.probs(basis = basis)
         return 0
