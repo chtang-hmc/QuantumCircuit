@@ -1,5 +1,18 @@
 import numpy as np
 
+def get_orthogonal_basis(v):
+    '''
+    get an orthogonal basis from a vector
+    '''
+    v = v/np.linalg.norm(v)
+    if np.isclose(v[0], 0):
+        if np.isclose(v[1], 0):
+            return np.array([[1, 0], [0, 1]])
+        else:
+            return np.array([[0, 1], [-1, 0]])
+    else:
+        return np.array([v, [-v[1], v[0]]])
+
 class Basis:
     '''
     basis class
@@ -43,7 +56,7 @@ class Qubit:
     '''
     qubit class
     '''
-    def __init__(self, state: np.array = np.array([1,0]), basis: Basis = Basis(), entangled: bool = False, other = None):
+    def __init__(self, state: np.array = np.array([1,0]), basis: Basis = Basis(), entangled: bool = False, other: list = []):
         norm = np.linalg.norm(state)
         assert np.isclose(norm, 1), "State must be normalized"
         self.state = state
@@ -52,10 +65,10 @@ class Qubit:
         self.other = other
         
     def __str__(self):
-        return str(self.state)
+        return f'Qubit in state {self.state} in basis {self.basis}' + (f' entangled with {self.other}' if self.entangled else '')
     
     def __repr__(self):
-        return str(self.state)
+        return f'Qubit in state {self.state} in basis {self.basis}' + (f' entangled with {self.other}' if self.entangled else '')
 
     def _copy(self):
         return Qubit(state = self.state, basis = self.basis)
@@ -103,7 +116,7 @@ class Qubit:
             self.basis = basis
             self.change_basis(original_basis)
             return result
-    
+
     def entangle(self, other):
         '''
         entangle two qubits
