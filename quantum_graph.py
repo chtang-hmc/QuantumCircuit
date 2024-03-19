@@ -15,6 +15,9 @@ class Node:
     def neighbors(self):
         return [edge.v for edge in self.edges]
     
+    def neighbor(self, node):
+        return node in self.neighbors()
+    
     def degree(self):
         return len(self.edges)
     
@@ -75,6 +78,9 @@ class Edge:
     def set_weight(self, weight):
         self.weight = weight
         
+    def far(self):
+        return self.weight == float('inf')
+        
 class Graph:
     def __init__(self, size):
         self.root = Root()
@@ -87,29 +93,33 @@ class Graph:
     
     def __getitem__(self, i):
         return self.nodes[2*i -1], self.nodes[2*i]
+    
+    def _getindex(self, node):
+        return self.nodes.index(node)
                 
     def other(self, node):
-        assert other <= self.size * 2
-        if other <= self.size:
-            return self.nodes[other + self.size]
+        if isinstance(node, Node):
+            node = self._getindex(node)
+        assert node <= self.size * 2
+        if node <= self.size:
+            return self.nodes[node + self.size]
         else:
-            return self.nodes[other - self.size]
-        
+            return self.nodes[node - self.size]
         
     def add_edge(self, u, v, weight):
         new_edge = Edge(u, v, weight)
         u.edges.append(new_edge)
         self.edges.append(new_edge)
         
-    def delete_edge(self, u, v, edge = None):
+    def delete_edge(self, u = None, v = None, edge = None):
         if edge:
-            u.edges.remove(edge)
+            edge.u.edges.remove(edge)
             self.edges.remove(edge)
-            return
-        for edge in u.edges:
-            if edge.v == v:
-                u.edges.remove(edge)
-                self.edges.remove(edge)
-                break
+        else:
+            for edge in u.edges:
+                if edge.v == v:
+                    u.edges.remove(edge)
+                    self.edges.remove(edge)
+                    break
         
     
