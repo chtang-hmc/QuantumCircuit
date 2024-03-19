@@ -3,16 +3,20 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import scipy as sp
 
-class Qubit:
-    def __init__(self, state = 0):
-        self.state = state
+class Node:
+    def __init__(self):
         self.edges = []
         
     def __getitem__(self, i):
-       if self.edges[i]:
-           return self.edges[i].weight
-       else:
-           return float('inf')
+        if self.edges[i]:
+            return self.edges[i].weight
+        else:
+            return float('inf')
+
+class Qubit(Node):
+    def __init__(self, state = 0):
+        self.state = state
+        self.edges = []
         
 class Root(Qubit):
     def __init__(self, state = 0):
