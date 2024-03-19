@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import networkx as nx
 import scipy as sp
 import quantum_graph as qg
 
@@ -19,7 +18,7 @@ class Qubits(qg.Graph):
         if type(qubit) == int:
             qubit = self.nodes[qubit]
         prob = self.root.prob(qubit)
-        return np.random.choice([0, 1], p=[prob, 1-prob])
+        return np.random.choice([qubit, qubit.other], p=[prob, 1-prob])
     
     def measure(self, qubit):
         if type(qubit) == int:
@@ -31,3 +30,33 @@ class Qubits(qg.Graph):
             if edge.v == qubit.other:
                 self.delete_edge(edge)
         return result
+    
+    def measure_and_change_root(self, qubit):
+        if type(qubit) == int:
+            qubit = self.nodes[qubit]
+        result = self.measure(qubit)
+        self.root = result
+        return result
+    
+    def multimeasure(self, qubits):
+        results = []
+        for qubit in qubits:
+            result = self.measure_and_change_root(qubit)
+            results.append(result)
+        return results
+    
+    def weights(self, qubit):
+        if type(qubit) == int:
+            qubit = self.nodes[qubit]
+        weights = np.array([qubit.adj(node) for node in self.nodes])
+        return weights
+    
+    def log_matrix(self):
+        return np.array([self.weights(node) for node in self.nodes])
+    
+    def matrix(self):
+        return np.exp(-self.log_matrix())
+    
+    def prob_matrix(self):
+        return np.abs(self.matrix())**2
+    

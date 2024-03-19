@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import networkx as nx
 import scipy as sp
 
 class Node:
@@ -57,6 +56,9 @@ class Qubit(Node):
         self.state = state
         self.edges = []
         
+    def __str__(self):
+        return f'Qubit: {self.edges} edges'
+        
 class Root(Qubit):
     def __init__(self, state = 0):
         super().__init__(state)
@@ -84,7 +86,7 @@ class Graph:
         return f'Graph: {self.nodes} nodes and {self.edges} edges'
     
     def __getitem__(self, i):
-        return (self.nodes[2*i -1 ], self.nodes[2*i)
+        return self.nodes[2*i -1], self.nodes[2*i]
                 
     def other(self, node):
         assert other <= self.size * 2
