@@ -21,6 +21,30 @@ class Node:
     
     def add_edge(self, v, weight):
         self.edges.append(Edge(self, v, weight))
+        
+    def delete_edge(self, v):
+        for edge in self.edges:
+            if edge.v == v:
+                self.edges.remove(edge)
+                break
+    
+    def adj(self, v):
+        for edge in self.edges:
+            if edge.v == v:
+                return edge.weight
+        return float('inf')
+    
+    def set_weight(self, v, weight):
+        for edge in self.edges:
+            if edge.v == v:
+                edge.set_weight(weight)
+                break
+    
+    def coef(self, v):
+        return np.exp(-1j*self.adj(v))
+    
+    def prob(self, v):
+        return np.abs(self.coef(v))**2
     
     def __str__(self):
         return f'Node: {self.edges} edges'
@@ -45,6 +69,9 @@ class Edge:
         
     def __str__(self):
         return f'({self.u}, {self.v}, {self.weight})'
+    
+    def set_weight(self, weight):
+        self.weight = weight
         
 class Graph:
     def __init__(self, size):
@@ -58,19 +85,29 @@ class Graph:
     
     def __getitem__(self, i):
         return (self.nodes[2*i -1 ], self.nodes[2*i)
+                
+    def other(self, node):
+        assert other <= self.size * 2
+        if other <= self.size:
+            return self.nodes[other + self.size]
+        else:
+            return self.nodes[other - self.size]
+        
         
     def add_edge(self, u, v, weight):
         new_edge = Edge(u, v, weight)
         u.edges.append(new_edge)
         self.edges.append(new_edge)
         
-    def delete_edge(self, u, v):
+    def delete_edge(self, u, v, edge = None):
+        if edge:
+            u.edges.remove(edge)
+            self.edges.remove(edge)
+            return
         for edge in u.edges:
             if edge.v == v:
                 u.edges.remove(edge)
                 self.edges.remove(edge)
                 break
-                
-    def adj
         
     
