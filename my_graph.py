@@ -11,6 +11,8 @@ class Qubits(qg.Graph):
             for j in range(i, size):
                 self.add_edge(self.nodes[i+1], self.nodes[j+1], 0)
                 self.add_edge(self.nodes[j+1], self.nodes[i+1], 0)
+                self.add_edge(self.nodes[i+1+size], self.nodes[j+1+size], 0)
+                self.add_edge(self.nodes[j+1+size], self.nodes[i+1+size], 0)
         for node in self.nodes:
             self.add_edge(node, node, 0)
             
@@ -111,4 +113,11 @@ class Qubits(qg.Graph):
         
     def T(self, qubit):
         self._single_qubit_gate(qubit, np.array([[1,0],[0,np.exp(1j*np.pi/4)]]))
-    
+        
+    def _controlled_gate(self, control, target, gate):
+        if isinstance(control, int):
+            control = self.nodes[control]
+        if isinstance(target, int):
+            target = self.nodes[target]
+        a,b,c,d = gate[0][0], gate[0][1], gate[1][0], gate[1][1]
+        # to be added
