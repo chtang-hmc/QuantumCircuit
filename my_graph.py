@@ -120,4 +120,15 @@ class Qubits(qg.Graph):
         if isinstance(target, int):
             target = self.nodes[target]
         a,b,c,d = gate[0][0], gate[0][1], gate[1][0], gate[1][1]
-        # to be added
+        x, y = control.adj(target), control.adj(self.other(target))
+        # find edges from control to target and target.other
+        edge1 = self.get_edge(control, target)
+        edge2 = self.get_edge(control, self.other(target))
+        if edge1:
+            edge1.set_weight(-np.log(np.exp(-x)*a + np.exp(-y)*b))
+        else:
+            self.add_edge(control, target, -np.log(np.exp(-x)*a + np.exp(-y)*b))
+        if edge2:
+            edge1.set_weight( -np.log(np.exp(-x)*c + np.exp(-y)*d))
+        else:
+            self.add_edge(control, self.other(target), -np.log(np.exp(-x)*c + np.exp(-y)*d))

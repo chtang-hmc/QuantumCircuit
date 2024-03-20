@@ -121,5 +121,11 @@ class Graph:
                     u.edges.remove(edge)
                     self.edges.remove(edge)
                     break
+                
+    def get_edge(self, u, v):
+        for edge in u.edges:
+            if edge.v == v:
+                return edge
+        return None
         
     
