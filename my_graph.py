@@ -13,7 +13,7 @@ class Qubits(qg.Graph):
                 self.add_edge(self.nodes[j+1], self.nodes[i+1], 0)
                 self.add_edge(self.nodes[i+1+size], self.nodes[j+1+size], 0)
                 self.add_edge(self.nodes[j+1+size], self.nodes[i+1+size], 0)
-        for node in self.nodes:
+        for node in self.nodes[1:]:
             self.add_edge(node, node, 0)
             
     def _measure_without_change(self, qubit):
@@ -76,6 +76,7 @@ class Qubits(qg.Graph):
     
     def plot(self):
         plt.matshow(self.prob_matrix())
+        plt.colorbar()
         plt.show()
         
     def _single_qubit_gate(self, qubit, gate):
@@ -114,6 +115,15 @@ class Qubits(qg.Graph):
     def T(self, qubit):
         self._single_qubit_gate(qubit, np.array([[1,0],[0,np.exp(1j*np.pi/4)]]))
         
+    def R_z(self, qubit, theta):
+        self._single_qubit_gate(qubit, np.array([[1,0],[0,np.exp(1j*theta)]]))
+        
+    def R_y(self, qubit, theta):
+        self._single_qubit_gate(qubit, np.array([[np.cos(theta/2),-np.sin(theta/2)],[np.sin(theta/2),np.cos(theta/2)]]))
+        
+    def R_x(self, qubit, theta):
+        self._single_qubit_gate(qubit, np.array([[np.cos(theta/2),-1j*np.sin(theta/2)],[-1j*np.sin(theta/2),np.cos(theta/2)]]))
+        
     def _controlled_gate(self, control, target, gate):
         if isinstance(control, int):
             control = self.nodes[control]
@@ -132,3 +142,49 @@ class Qubits(qg.Graph):
             edge1.set_weight( -np.log(np.exp(-x)*c + np.exp(-y)*d))
         else:
             self.add_edge(control, self.other(target), -np.log(np.exp(-x)*c + np.exp(-y)*d))
+            
+    def CNOT(self, control, target):
+        self._controlled_gate(control, target, np.array([[1,0],[0,1]]))
+        
+    def CCNOT(self, control1, control2, target):
+        self.CNOT(control2, target)
+        self.CNOT(control1, target)
+        self.CNOT(control2, target)
+        
+    def Toffoli(self, control1, control2, target):
+        self.CCNOT(control1, control2, target)
+        
+    def swap(self, qubit1, qubit2):
+        self.CNOT(qubit1, qubit2)
+        self.CNOT(qubit2, qubit1)
+        self.CNOT(qubit1, qubit2)
+        
+    def CX(self, control, target):
+        self.CNOT(control, target)
+        
+    def CZ(self, control, target):
+        self._controlled_gate(control, target, np.array([[1,0],[0,-1]]))
+        
+    def CS(self, control, target):
+        self._controlled_gate(control, target, np.array([[1,0],[0,1j]]))
+        
+    def CT(self, control, target):
+        self._controlled_gate(control, target, np.array([[1,0],[0,np.exp(1j*np.pi/4)]]))
+        
+    def CR_z(self, control, target, theta):
+        self._controlled_gate(control, target, np.array([[1,0],[0,np.exp(1j*theta)]]))
+        
+    def CR_y(self, control, target, theta):
+        self._controlled_gate(control, target, np.array([[np.cos(theta/2),-np.sin(theta/2)],[np.sin(theta/2),np.cos(theta/2)]]))
+        
+    def CR_x(self, control, target, theta):
+        self._controlled_gate(control, target, np.array([[np.cos(theta/2),-1j*np.sin(theta/2)],[-1j*np.sin(theta/2),np.cos(theta/2)]]))
+        
+    def is_equal(self, other):
+        return np.allclose(self.prob_matrix(), other.prob_matrix())
+    
+    def __eq__(self, other):
+        return self.is_equal(other)
+    
+    def __ne__(self, other):
+        return not self.is_equal(other)
